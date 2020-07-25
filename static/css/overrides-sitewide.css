@@ -1,0 +1,11 @@
+/**************** footer message ***********************/
+#bootstrap-overrides #productionFooter div p small em a {
+    color: black;
+    font-family: "Sue Ellen Francisco", cursive;
+    font-size: 20px;
+}
+
+#bootstrap-overrides #productionFooter div p small em a:hover {
+    text-decoration: none;
+    font-weight: bold;
+}
