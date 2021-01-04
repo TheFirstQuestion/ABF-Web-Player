@@ -1,6 +1,12 @@
 {% include "header.html" %}
 <link rel="stylesheet" href="{{ url_for('static', filename='css/overrides-index.css') }}">
 
-<h1>Your Content Here</h1>
+<h3><a href="/settings">Settings</a></h3>
+
+<ul>
+    {% for song in songs %}
+        <li><a href="/play?song={{song.name}}">{{song.name}}</a></li>
+    {% endfor %}
+</ul>
 
 {% include "footer.html" %}

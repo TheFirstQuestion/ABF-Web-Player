@@ -1,0 +1,52 @@
+{% include "header.html" %}
+<a href="/">see all songs</a>
+
+<br><br>
+
+<div id="bandOrPartBox" class="btn-group btn-group-toggle" data-toggle="buttons">
+    <label class="btn btn-danger"><input type="radio" id="band" name="bandOrPart" class="btn-group-toggle" onclick="bandOrPartClick(this);">Full Band</label>
+    <label class="btn btn-danger"><input type="radio" id="part" name="bandOrPart" class="btn-group-toggle" onclick="bandOrPartClick(this);">Part</label>
+</div>
+<div id="drumTypeBox" class="btn-group btn-group-toggle" data-toggle="buttons">
+    <label class="btn btn-danger"><input type="radio" id="fieldDrumz" name="drumType" class="btn-group-toggle" onclick="drumTypeClick(this);">Field Drumz</label>
+    <label class="btn btn-danger"><input type="radio" id="kit" name="drumType" value="Kit"  class="btn-group-toggle" onclick="drumTypeClick(this);">Kit</label>
+    <label class="btn btn-danger"><input type="radio" id="noDrumz" name="drumType" class="btn-group-toggle" onclick="drumTypeClick(this);">No Drumz</label>
+</div>
+<div id="partBox" class="btn-group btn-group-toggle" data-toggle="buttons">
+    <label class="btn btn-danger"><input type="radio" id="snare" name="partType" class="btn-group-toggle" onclick="partClick(this);">Snare</label>
+    <label class="btn btn-danger"><input type="radio" id="tom" name="partType" class="btn-group-toggle" onclick="partClick(this);">Tom</label>
+</div>
+
+<br><br>
+
+<script src="{{ url_for('static', filename='js/cookie-helper.js') }}"></script>
+
+<script>
+    function bandOrPartClick(radioButton) {
+        if (radioButton.id == "band") {
+            setCookie("preferBand", "true", 365)
+        } else {
+            setCookie("preferBand", "false", 365)
+        }
+    }
+
+    function drumTypeClick(radioButton) {
+        if (radioButton.id == "fieldDrumz") {
+            setCookie("drumType", "fieldDrumz", 365)
+        } else if (radioButton.id == "kit") {
+            setCookie("drumType", "kit", 365)
+        } else {
+            setCookie("drumType", "noDrumz", 365)
+        }
+    }
+
+    function partClick(radioButton) {
+        if (radioButton.id == "snare") {
+            setCookie("partType", "snare", 365)
+        } else {
+            setCookie("partType", "tom", 365)
+        }
+    }
+</script>
+
+{% include "footer.html" %}

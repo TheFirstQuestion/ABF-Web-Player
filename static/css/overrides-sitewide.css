@@ -1,3 +1,7 @@
+.disabled {
+    cursor: default;
+}
+
 /**************** footer message ***********************/
 #bootstrap-overrides #productionFooter div p small em a {
     color: black;

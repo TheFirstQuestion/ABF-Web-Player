@@ -1,0 +1,217 @@
+{% include "header.html" %}
+<a href="/">see all songs</a>
+<a href="/play?song={{prevSong.name}}">previous song</a>
+<a href="/play?song={{nextSong.name}}">next song</a>
+
+<h1>{{song.name}}</h1>
+
+<button type="button" class="btn btn-danger" onclick="playOrPause()" id="playOrPauseButton">play/pause</button>
+<button type="button" class="btn btn-danger" onclick="backUp()" id="backUpButton">back up</button>
+<button type="button" class="btn btn-danger" onclick="skipAhead()" id="skipAheadButton">skip ahead</button>
+
+<br>
+
+<label for="volumeSlider">Volume</label>
+<input type="range" min="0" max="100" value="100" class="slider" id="volumeSlider">
+<label for="tempoSlider">Tempo</label>
+<input type="range" min="75" max="125" value="100" class="slider" list="steplist" id="tempoSlider">
+<datalist id="steplist">
+    <option>75</option>
+    <option>90</option>
+    <option>100</option>
+    <option>110</option>
+    <option>125</option>
+</datalist>
+
+<br>
+
+<div id="bandOrPartBox" class="btn-group btn-group-toggle" data-toggle="buttons">
+    <label class="btn btn-danger"><input type="radio" id="band" name="bandOrPart" class="btn-group-toggle" onclick="bandOrPartClick(this);">Full Band</label>
+    <label class="btn btn-danger"><input type="radio" id="part" name="bandOrPart" class="btn-group-toggle" onclick="bandOrPartClick(this);">Part</label>
+</div>
+<div id="drumTypeBox" class="d-none btn-group btn-group-toggle" data-toggle="buttons">
+    <label class="btn btn-danger"><input type="radio" id="fieldDrumz" name="drumType" class="btn-group-toggle" onclick="drumTypeClick(this);">Field Drumz</label>
+    <label class="btn btn-danger"><input type="radio" id="kit" name="drumType" value="Kit"  class="btn-group-toggle" onclick="drumTypeClick(this);">Kit</label>
+    <label class="btn btn-danger"><input type="radio" id="noDrumz" name="drumType" class="btn-group-toggle" onclick="drumTypeClick(this);">No Drumz</label>
+</div>
+<div id="partBox" class="d-none btn-group btn-group-toggle" data-toggle="buttons">
+    <label class="btn btn-danger"><input type="radio" id="snare" name="partType" class="btn-group-toggle" onclick="partClick(this);">Snare</label>
+    <label class="btn btn-danger"><input type="radio" id="tom" name="partType" class="btn-group-toggle" onclick="partClick(this);">Tom</label>
+</div>
+
+
+<script src="{{ url_for('static', filename='js/cookie-helper.js') }}"></script>
+
+<script>
+    var currentlyPlaying;
+    var sound;
+
+    window.onload = function() {
+        currentlyPlaying = false;
+        disableButtons();
+        initializePartOrBand();
+        //setCookie("shuffle", "true", 365);
+    };
+
+    var tempoSlider = document.getElementById("tempoSlider");
+    tempoSlider.oninput = function() {
+        sound.rate(this.value / 100);
+    }
+
+    var volumeSlider = document.getElementById("volumeSlider");
+    volumeSlider.oninput = function() {
+        sound.volume(this.value / 100);
+    }
+
+    // Monitor for key presses
+    document.addEventListener('keyup', keyUp, false);
+
+    function playOrPause() {
+        if (currentlyPlaying) {
+            sound.pause();
+        } else {
+            sound.play();
+            sound.rate(tempoSlider.value / 100);
+            sound.volume(volumeSlider.value / 100);
+        }
+        currentlyPlaying = !currentlyPlaying;
+    }
+
+    function backUp() {
+        sound.pause();
+        sound.seek(sound.seek() - 10);
+        sound.play();
+        currentlyPlaying = true;
+    }
+
+    function skipAhead() {
+        sound.pause();
+        sound.seek(sound.seek() + 10);
+        sound.play();
+        currentlyPlaying = true;
+    }
+
+    function initializePartOrBand() {
+        var preferBand = getCookie("preferBand");
+        if (preferBand == "true") {
+            document.getElementById("band").click();
+        } else {
+            document.getElementById("part").click();
+        }
+    }
+
+    function initializeBand() {
+        document.getElementById("noDrumz").click();
+        document.getElementById("kit").click();
+        document.getElementById("fieldDrumz").click();
+        var preferred = getCookie("drumType");
+        if (preferred == "fieldDrumz") {
+            document.getElementById("fieldDrumz").click();
+        } else if (preferred == "kit") {
+            document.getElementById("kit").click();
+        } else {
+            document.getElementById("noDrumz").click();
+        }
+    }
+
+    function initializePart() {
+        var preferred = getCookie("partType");
+        if (preferred == "snare") {
+            document.getElementById("snare").click();
+        } else {
+            document.getElementById("tom").click();
+        }
+    }
+
+    function bandOrPartClick(radioButton) {
+        if (radioButton.id == "band") {
+            document.getElementById("drumTypeBox").classList.remove("d-none");
+            document.getElementById("partBox").classList.add("d-none");
+            initializeBand();
+        } else {
+            document.getElementById("drumTypeBox").classList.add("d-none");
+            document.getElementById("partBox").classList.remove("d-none");
+            initializePart();
+        }
+    }
+
+    function drumTypeClick(radioButton) {
+        if (currentlyPlaying) {
+            sound.stop();
+            currentlyPlaying = false;
+        }
+        if (radioButton.id == "fieldDrumz") {
+            sound = new Howl({
+                src: ["{{song.pathToFieldDrumz | safe}}"]
+            });
+        } else if (radioButton.id == "kit") {
+            sound = new Howl({
+                src: ["{{song.pathToKit | safe}}"]
+            });
+        } else {
+            sound = new Howl({
+                src: ["{{song.pathToNoDrumz | safe}}"]
+            });
+        }
+    }
+
+    function partClick(radioButton) {
+        if (currentlyPlaying) {
+            sound.stop();
+            currentlyPlaying = false;
+        }
+        if (radioButton.id == "snare") {
+            sound = new Howl({
+                src: ["{{song.pathToSnarePart | safe}}"]
+            });
+        } else {
+            sound = new Howl({
+                src: ["{{song.pathToTomPart | safe}}"]
+            });
+        }
+    }
+
+    function keyUp(e) {
+        if (e.keyCode == 32) {
+            // space bar
+            document.getElementById("playOrPauseButton").click();
+        } else if (e.keyCode == 37) {
+            // left arrow
+            document.getElementById("backUpButton").click();
+        } else if (e.keyCode == 39) {
+            // right arrow
+            document.getElementById("skipAheadButton").click();
+        }
+    }
+
+    function disableButtons() {
+        if (!{{song.hasSnarePart | lower() }}) {
+            document.getElementById("snare").disabled = true;
+            document.getElementById("snare").parentElement.classList.add("disabled");
+        }
+        if (!{{song.hasTomPart | lower() }}) {
+            document.getElementById("tom").disabled = true;
+            document.getElementById("tom").parentElement.classList.add("disabled");
+        }
+        if (!{{song.hasSnarePart | lower() }} && !{{song.hasTomPart | lower() }}) {
+            document.getElementById("part").disabled = true;
+            document.getElementById("part").parentElement.classList.add("disabled");
+            document.getElementById("band").click();
+        }
+
+        if (!{{song.hasFieldDrumz | lower() }}) {
+            document.getElementById("fieldDrumz").disabled = true;
+            document.getElementById("fieldDrumz").parentElement.classList.add("disabled");
+        }
+        if (!{{song.hasKit | lower() }}) {
+            document.getElementById("kit").disabled = true;
+            document.getElementById("kit").parentElement.classList.add("disabled");
+        }
+        if (!{{song.hasNoDrumz | lower() }}) {
+            document.getElementById("noDrumz").disabled = true;
+            document.getElementById("noDrumz").parentElement.classList.add("disabled");
+        }
+    }
+</script>
+
+{% include "footer.html" %}
